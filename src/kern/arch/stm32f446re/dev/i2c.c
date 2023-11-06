@@ -74,9 +74,9 @@ bool I2C_Address(I2C_TypeDef* i2c, uint8_t address) {
     // uint8_t addr_check = I2C1->SR1;
     while (!(I2C1->SR1 & (1 << 1))) {// wait for ADDR bit to set
         i++;
-        if (getTime() > t) {
-            return false;
-        }
+        // if (getTime() > t) {
+        //     return false;
+        // }
     }
 
     temp = I2C1->SR1 | I2C1->SR2;  // read SR1 and SR2 to clear the ADDR bit
@@ -233,7 +233,7 @@ bool _I2C_MEM_WRITE(I2C_TypeDef* i2c, uint8_t devAddr, uint8_t regAddr, uint8_t 
     I2C_Start(i2c);
     bool check = I2C_Address(i2c, devAddr);
     if (check == false) return false;
-    delay_ms(10);
+    delay_ms(1);
     I2C_Write(i2c, regAddr);
     I2C_Write(i2c, data);
     I2C_Stop(i2c);
@@ -248,11 +248,19 @@ bool _I2C_MEM_READ(I2C_TypeDef* i2c, uint8_t devAddr, uint8_t regAddr, uint8_t* 
     I2C_Start(i2c);
     bool check = I2C_Address(i2c, devAddr);
     if (check == false) return false;
-    delay_ms(10);
+    delay_ms(1);
     I2C_Write(i2c, regAddr);
-    delay_ms(10);
+    delay_ms(1);
     I2C_Start(i2c);
     I2C_Read(i2c, devAddr, buffer, size);
     I2C_Stop(i2c);
     return true;
+}
+
+void _I2C_Reset(I2C_TypeDef* i2c) {
+    I2C_Stop(i2c);
+    I2C1->CR1 |= (1 << 15); // i2c sw reset
+    RCC->APB1ENR &= ~(1 << 21);  // disable I2C CLOCK
+    delay_ms(1);
+    DRV_I2C_INIT(I2C1);
 }

@@ -1,10 +1,11 @@
-# Output Binary Name
+# Output Binary name
 OUTPUT = final
 # Directories
-TOP=../kern
+SRC = ../src
+TOP=$(SRC)/kern
 TARGET = target
 OBJECT = object
-USERLAND = ../userland
+USERLAND = $(SRC)/userland
 MAPDIR = mapfiles
 MCU=stm32f446re
 
@@ -75,11 +76,12 @@ $(TARGET)/$(OUTPUT): $(OBJECTS) Makefile
 $(OBJECT):
 	mkdir $@
 
+$(MAPDIR):
+	mkdir $@
+
 $(TARGET):
 	mkdir $@
 
-$(MAPDIR):
-	mkdir $@
 
 
 

@@ -57,8 +57,8 @@ void __k_sys_init(void)
 	kprintf("CPUID %x\n", SCB->CPUID);
 	kprintf("OS Version: 1.0\n");
 	kprintf("Time Elapse %d ms\n", __getTime());
-	kprintf("Wellcome ....\r\n");
+	kprintf("Starting OptiFlight ....\r\n");
 	kprintf("*************************************\r\n");
-	kprintf("# ");
+	// kprintf("# ");
 
 }

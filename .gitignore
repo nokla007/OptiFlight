@@ -1,4 +1,8 @@
-src/compile/*
-!src/compile/Makefile
 .vscode/*
-kmain.txt
+src/compile/*
+src/compile/object/*
+src/compile/mapfiles/*
+src/compile/target/*
+build/object/*
+build/mapfiles/*
+build/target/*

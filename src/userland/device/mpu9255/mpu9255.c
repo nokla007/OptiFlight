@@ -65,10 +65,10 @@ bool MPU9255_Init()
     // AccelScaleFactor = 4096;
     AccelScaleFactor = 16384;
     MagnScaleFactor = 0.6;
-    delay_ms(10);
+    // delay_ms(1);
 
     MPU_WriteReg(INT_PIN_CFG, 0x02); 	// Bypass enable for magnetometer.
-    delay_ms(10);
+    delay_ms(1);
 
     MPU9255_InitGyrOffset();
 
@@ -130,7 +130,7 @@ void MPU9255_READ_MAG(double* magData)
     int16_t InBuffer[3] = { 0 };
 
     MAG_WriteReg(MAG_CNTL, 0x01);
-    delay_ms(10);
+    delay_ms(1);
 
     MAG_ReadReg(MAG_XOUT_L, data, 6);
     InBuffer[0] = (data[1] << 8) | data[0];
@@ -153,8 +153,7 @@ bool MPU9255_Check(void)
 {
     uint8_t whoami;
     MPU_ReadReg(WHO_AM_I, &whoami, 1);
-    delay_ms(10);
-
+    delay_ms(1);
     MAG_ReadReg(0x00, &whoami, 1);
 
     return true;
@@ -204,7 +203,7 @@ void MPU9255_InitGyrOffset(void)
         TempGy += gyroData[1];
         TempGz += gyroData[2];
 
-        delay_ms(100);
+        delay_ms(1);
     }
 
     GyroOffset[0] = TempGx / 32;
@@ -216,17 +215,18 @@ void MPU9255_InitGyrOffset(void)
 void MPU9255_InitMagnOffset(void)
 {
     MAG_WriteReg(MAG_CNTL, 0x01);
-    delay_ms(10);
+    delay_ms(1);
     MAG_ReadReg(MAG_XOUT_L, MagOffest, 6);
 }
 
 void __MPU_Reset(void) {
-    delay_ms(10);
+    _I2C_Reset(I2C1);
+    delay_ms(1);
     MPU_WriteReg(PWR_MGMT_1, 0x80);
     MPU_WriteReg(PWR_MGMT_1, 0x00);
     MPU_WriteReg(SMPLRT_DIV, 0x07);
     MPU_WriteReg(CONFIG, 0x07);
-    delay_ms(10);
+    delay_ms(1);
     MPU_WriteReg(INT_PIN_CFG, 0x02);
 }
 
