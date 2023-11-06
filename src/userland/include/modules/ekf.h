@@ -1,6 +1,6 @@
 
-#ifndef __ESTIMATION_H
-#define __ESTIMATION_H
+#ifndef __EKFILTER_H
+#define __EKFILTER_H
 #include <stdint.h>
 
 typedef struct {

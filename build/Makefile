@@ -6,6 +6,8 @@ TOP=$(SRC)/kern
 TARGET = target
 OBJECT = object
 USERLAND = $(SRC)/userland
+DEVICES = $(USERLAND)/device
+MODULES = $(USERLAND)/modules
 MAPDIR = mapfiles
 MCU=stm32f446re
 
@@ -34,9 +36,11 @@ C_SOURCES =  \
 	$(TOP)/lib/ktimes.c \
 	$(TOP)/kmain/kstdio.c \
 	$(TOP)/kmain/kmain.c \
-	$(USERLAND)/device/mpu9255/mpu9255.c \
-	$(USERLAND)/device//bmp280/bmp280.c \
-	$(USERLAND)/main.c 
+	$(DEVICES)/mpu9255/mpu9255.c \
+	$(DEVICES)/bmp280/bmp280.c \
+	$(MODULES)/control/pid.c \
+	$(MODULES)/estimation/ekf.c \
+	$(USERLAND)/main.c \
 
 
 # fpu
