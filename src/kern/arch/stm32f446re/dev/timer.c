@@ -1,36 +1,87 @@
-/*
- * Copyright (c) 2022 
- * Computer Science and Engineering, University of Dhaka
- * Credit: CSE Batch 25 (starter) and Prof. Mosaddek Tushar
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE UNIVERSITY OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
 #include <timer.h>
-void DRV_TIMER_INIT()
-{
 
+static uint32_t TIM2_INTERRUPT_CALL_COUNT = 0;
+static uint8_t TIM2_READY_TO_USE = 0;
+
+void ConfigTimer2ForSystem(void) {
+    // 1. Enable Timer2 clock
+    RCC->APB1ENR |= 1 << 0;
+
+    // 2. Set the Prescalar
+    TIM2->PSC = TIM2_PSC - 1;
+
+    /*
+        THE APB1 BUS CLOCK IS 90MHz
+        SO EVERY TIMER DELAY IS 90MHz/90 = 1 microseconds
+    */
+
+    // 3. Set the Auto-Reload-Resister value. Set max value for 32 bits.
+    TIM2->ARR = (uint32_t)TIM2_ARR;
+
+    // update interrupt enable
+    TIM2->DIER = 1 << 0;
+
+    // Re-initialize the counter and generates an update of the registers.
+    TIM2->EGR = 1 << 0;
+
+    // 4. Enable the Timer, and wait for the update Flag to set
+    TIM2->CR1 |= 1 << 0;
+    while (!(TIM2->SR & (1 << 0)))
+        ; // wait until the update flag is set
+
+    __NVIC_EnableIRQ(TIM2_IRQn);
+    TIM2->SR = ~(1 << 0);
+
+    TIM2->CNT = 0;
+
+    TIM2_READY_TO_USE = 1;
 }
 
+void Delay_micro_second(uint32_t delay) {
+    uint32_t _ICCTarget = TIM2_INTERRUPT_CALL_COUNT;
+    _ICCTarget += (delay / TIM2_ARR);
+    uint32_t _CNTTarget = (delay % TIM2_ARR) + (uint32_t)TIM2->CNT;
+    _ICCTarget += (_CNTTarget / TIM2_ARR);
+    _CNTTarget = (_CNTTarget % TIM2_ARR);
+    //usart_println(USART2,itoa(_ICCTarget,10));
+    //usart_println(USART2,itoa(_CNTTarget,10));
+    while (TIM2_INTERRUPT_CALL_COUNT < _ICCTarget)
+        ;
+    while ((uint32_t)TIM2->CNT < _CNTTarget)
+        ;
+}
 
+void Delay(uint32_t delay) {
+    for (uint16_t i = 0; i < delay; i++) {
+        Delay_micro_second(1000);
+    }
+}
+
+// TODO: find better way to handel overflow
+uint32_t getMiliseconds() {
+    uint32_t t_ =
+        ((TIM2_ARR * TIM2_INTERRUPT_CALL_COUNT) / TIM2_TICK_TIME_MS_DIV) +
+        ((uint32_t)TIM2->CNT / TIM2_TICK_TIME_MS_DIV);
+    return t_;
+}
+
+// TODO: find better way to handel overflow
+uint32_t getMicroseconds() {
+    uint32_t t_ =
+        ((TIM2_ARR * TIM2_INTERRUPT_CALL_COUNT) / TIM2_TICK_TIME_US_DIV) +
+        ((uint32_t)TIM2->CNT / TIM2_TICK_TIME_US_DIV);
+    return t_;
+}
+
+void TIM2_Handler() {
+    TIM2->SR = ~(1 << 0); // clear interrupt flag
+    if (!TIM2_READY_TO_USE)
+        return;
+    TIM2_INTERRUPT_CALL_COUNT++;
+    TIM2->CNT = 0;
+}
+
+void DRV_TIMER_INIT()
+{
+    return;
+}
