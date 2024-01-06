@@ -96,9 +96,15 @@ __attribute__((weak)) uint32_t __getTime(void)
     return time;
 }
 
+// Routine to execute on sytick interrupt. 
+__attribute__((weak)) void SysTick_Routine() {
+    return;
+}
+
 __attribute__((weak)) void SysTick_Handler()
 {
     __mscount += (SYSTICK->LOAD) / (PLL_N * 1000);
+    SysTick_Routine();
     return;
 }
 

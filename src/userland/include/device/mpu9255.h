@@ -79,8 +79,9 @@
 // //extern int16_t accel[3], gyro[3];
 
 bool MPU9255_Init(void);
-void MPU9255_READ_ACCEL(double* accelData);
-void MPU9255_READ_GYRO(double* gyroData);
-void MPU9255_READ_MAG(double* magData);
+bool MPU9255_READ_ACCEL(double* accelData);
+bool MPU9255_READ_GYRO(double* gyroData);
+bool MPU9255_READ_MAG(double* magData);
+bool MPU9255_READ_ALL(double* gyroData, double* accelData, double* magData);
 bool MPU9255_Check(void);
 #endif
