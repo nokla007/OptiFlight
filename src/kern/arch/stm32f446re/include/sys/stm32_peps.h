@@ -260,5 +260,33 @@ typedef struct
 
 
 
+/*
+    Data Structure for EXTI
+*/
+typedef struct {
+    uint32_t IMR;
+    uint32_t EMR;
+    uint32_t RTSR;
+    uint32_t FTSR;
+    uint32_t SWIER;
+    uint32_t PR;
+} EXTI_t;
+
+#define EXTI ((EXTI_t *)0x40013C00)
+
+/*
+    Data Structure for SYSCFG
+*/
+typedef struct {
+    uint32_t MEMRMP;
+    uint32_t PCM;
+    uint32_t EXTICR[4];
+    uint32_t CMPCR;
+    uint32_t CFGR;
+} SYSCFG_t;
+
+#define SYSCFG ((SYSCFG_t *)0x40013800)
+
+
 #endif
 

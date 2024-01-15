@@ -84,4 +84,5 @@ bool MPU9255_READ_GYRO(double* gyroData);
 bool MPU9255_READ_MAG(double* magData);
 bool MPU9255_READ_ALL(double* gyroData, double* accelData, double* magData);
 bool MPU9255_Check(void);
+void MPU9255_MagCalibrate(void);
 #endif

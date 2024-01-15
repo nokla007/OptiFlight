@@ -85,22 +85,24 @@ bool __getAngles(Angle* angles) {
     // bool mag_status = MPU9255_READ_MAG(magData);
 
     bool status = MPU9255_READ_ALL(gyroData, accelData, magData);
+    kalman_filter(gyroData, accelData, magData, angles);
 
-    if (status) {
-        // Sensor Fusion
-        // TODO call appropriate sensor fusion algorithm.
-        // options: kalman filter or quaternion kalman filter        
-        kalman(gyroData, accelData, magData, angles);
-        // kalman_filter(gyroData, accelData, magData, &angle_q);
-        // kalman_quaternion(gyroData, accelData, magData, &quat);
-        // quaternion_to_euler(&quat, &angle_q);
-    }
-    else {
-        angles->roll = 0;
-        angles->pitch = 0;
-        angles->yaw = 0;
-        return false;
-    }
+
+    // if (status) {
+    //     // Sensor Fusion
+    //     // TODO call appropriate sensor fusion algorithm.
+    //     // options: kalman filter or quaternion kalman filter        
+    //     // kalman(gyroData, accelData, magData, angles);
+    //     kalman_filter(gyroData, accelData, magData, angles);
+    //     // kalman_quaternion(gyroData, accelData, magData, &quat);
+    //     // quaternion_to_euler(&quat, &angle_q);
+    // }
+    // else {
+    //     angles->roll = 0;
+    //     angles->pitch = 0;
+    //     angles->yaw = 0;
+    //     return false;
+    // }
 
     // record time interval
     dt = __getTime() - prev_t;
@@ -197,6 +199,7 @@ void kalman_filter(double* gyrodata, double* acceldata, double* magdata, Angle* 
 
 double Kalman_getAngle(Kalman_t* Kalman, double newAngle, double newRate)
 {
+    // TODO handle angle as x,y coordinate
     double rate = newRate - Kalman->bias;
     Kalman->angle += dt * rate;
 
@@ -231,17 +234,19 @@ double Kalman_getAngle(Kalman_t* Kalman, double newAngle, double newRate)
 
 void __measurement(double* acceldata, double* magdata, double* angles) {
     // normalize mag data
-    double magnorm = sqrt(magdata[0] * magdata[0] + magdata[1] * magdata[1] + magdata[2] * magdata[2]);
-    if (magnorm == 0) magnorm = 1;
+    // double magnorm = sqrt(magdata[0] * magdata[0] + magdata[1] * magdata[1] + magdata[2] * magdata[2]);
+    // if (magnorm == 0) 
+    double magnorm = 1;
     // roll
     // angles[0] = atan2(-acceldata[0], sqrt(acceldata[1] * acceldata[1] + acceldata[2] * acceldata[2])) * RAD_TO_DEG;
-    angles[0] = atan2(acceldata[1], sqrt((acceldata[0] * acceldata[0]) + (acceldata[2] * acceldata[2]))) * RAD_TO_DEG;
+    angles[1] = atan2(acceldata[1], sqrt((acceldata[0] * acceldata[0]) + (acceldata[2] * acceldata[2]))) * RAD_TO_DEG;
     // pitch
     // angles[1] = atan2(acceldata[1], acceldata[2]) * RAD_TO_DEG;
     // angles[1] = atan2(-acceldata[0], acceldata[2]) * RAD_TO_DEG;
-    angles[1] = atan2(acceldata[0], sqrt((acceldata[1] * acceldata[1]) + (acceldata[2] * acceldata[2]))) * RAD_TO_DEG;
+    angles[0] = atan2(acceldata[0], sqrt((acceldata[1] * acceldata[1]) + (acceldata[2] * acceldata[2]))) * RAD_TO_DEG;
     // yaw
-    angles[2] = -atan2(magdata[1] / magnorm, magdata[0] / magnorm) * RAD_TO_DEG;
+    // angles[2] = -atan2(magdata[1] / magnorm, magdata[0] / magnorm) * RAD_TO_DEG; // TODO risky
+    angles[2] = 0;
 }
 
 
@@ -279,6 +284,7 @@ double __getAltitude(Angle* angle) {
     return z;
 }
 
+extern double normal_accel;
 double kalman_altitude(Angle* angles, double accelZ, double altitude) {
     static double z = 0;   // initial height = 0
     static double Vz = 0;     // initial velocity_Z = 0
@@ -290,7 +296,7 @@ double kalman_altitude(Angle* angles, double accelZ, double altitude) {
     static double Pvz = 1.0; //Vertical velocity error covariance
 
     // get Accelration_Z in inertial frame
-    double aZ = (accelZ - 1) * 9.81;            // net acceleration in m/s^2
+    double aZ = (accelZ - normal_accel) * 9.81;            // net acceleration in m/s^2
     aZ = aZ * cos(angles->roll / RAD_TO_DEG) * cos(angles->pitch / RAD_TO_DEG);  // acceleration in inertial frame
 
     //******** Estimate velocity_z  ***************

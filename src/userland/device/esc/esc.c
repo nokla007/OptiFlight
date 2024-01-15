@@ -65,7 +65,7 @@ void ESC_ConfigWithTimer2(void) {
 void ESC_Attach(ESC* esc) {
     //config pin as pwm
     GPIO_ENABLE(esc->gpio);
-    __GPIO_Config(esc->gpio, esc->pin);
+    __GPIO_Config_for_esc(esc->gpio, esc->pin);
     // pinConfig(esc->gpio, esc->pin, GPIO_ALTERNET | GPIO_AF_AF1 | GPIO_HIGH_SPEED); 
 }
 
@@ -88,7 +88,7 @@ void ESC_write(ESC* esc, uint16_t micros) {
 
 
 /*** Config GPIO for ESC */
-static void __GPIO_Config(GPIO_TypeDef* gpio, uint8_t pin) {
+void __GPIO_Config_for_esc(GPIO_TypeDef* gpio, uint8_t pin) {
     gpio->MODER |= (2 << (pin * 2));    // alternate funciton mode
     gpio->OSPEEDR |= (3 << (pin * 2));  // High Speed mode
     //alternate function 1

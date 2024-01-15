@@ -25,3 +25,8 @@ double PID_Controller(double set_value, double mea_value, double max_value, doub
 
     return output;
 }
+
+
+void motorDrive(int n) {
+
+}

@@ -45,10 +45,11 @@ void __k_sys_init(void)
 	DRV_GPIO_INIT(GPIOA); //Initialize GPIO 
 	DRV_USART_INIT(USART2); //configure as standard input and output 
 	DRV_I2C_INIT(I2C1); //configure I2C for sensor readout
+	ConfigTimer2ForSystem();
 	__enable_fpu(); //enable FPU single precision floating point unit
 	__SysTick_init(20000);	//enable systick for 10ms //25ms
 	__sysTick_enable();
-	__NVIC_SetPriority(SysTick_IRQn, 0xff);
+	__NVIC_SetPriority(SysTick_IRQn, 0x0);
 	__NVIC_SetPriority(PendSV_IRQn, 0xff);
 	kprintf("\n************************************\r\n");
 	kprintf("Booting DUOS .....\r\n");

@@ -41,6 +41,8 @@ C_SOURCES =  \
 	$(MODULES)/control/pid.c \
 	$(MODULES)/estimation/ekf.c \
 	$(USERLAND)/main.c \
+	$(DEVICES)/esc/esc.c \
+
 
 
 # fpu
