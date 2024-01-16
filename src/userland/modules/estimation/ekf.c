@@ -46,6 +46,9 @@ static void normalize(double* data, uint8_t size);
 static double lowPassFilter(double new_data, double previous_output, double alpha);
 void quaternion_to_euler(Quaternion* q, Angle* angle);
 
+double Kalman_getAngle_Estimate(Kalman_t* Kalman, double newRate);
+
+
 
 
 
@@ -194,7 +197,8 @@ void kalman_filter(double* gyrodata, double* acceldata, double* magdata, Angle* 
 
     angles->roll = Kalman_getAngle(&KalmanRoll, measured_angles[0], gyrodata[0]);
     angles->pitch = Kalman_getAngle(&KalmanPitch, measured_angles[1], gyrodata[1]);
-    angles->yaw = Kalman_getAngle(&KalmanYaw, measured_angles[2], gyrodata[2]);
+    // angles->yaw = Kalman_getAngle(&KalmanYaw, measured_angles[2], gyrodata[2]);
+    angles->yaw = Kalman_getAngle_Estimate(&KalmanYaw, gyrodata[2]);    // TODO mag disabled
 }
 
 double Kalman_getAngle(Kalman_t* Kalman, double newAngle, double newRate)
@@ -228,6 +232,14 @@ double Kalman_getAngle(Kalman_t* Kalman, double newAngle, double newRate)
     return Kalman->angle;
 };
 
+double Kalman_getAngle_Estimate(Kalman_t* Kalman, double newRate)
+{
+    // TODO handle angle as x,y coordinate
+    double rate = newRate - Kalman->bias;
+    Kalman->angle += dt * rate;
+
+    return Kalman->angle;
+};
 
 
 
@@ -245,7 +257,7 @@ void __measurement(double* acceldata, double* magdata, double* angles) {
     // angles[1] = atan2(-acceldata[0], acceldata[2]) * RAD_TO_DEG;
     angles[0] = atan2(acceldata[0], sqrt((acceldata[1] * acceldata[1]) + (acceldata[2] * acceldata[2]))) * RAD_TO_DEG;
     // yaw
-    // angles[2] = -atan2(magdata[1] / magnorm, magdata[0] / magnorm) * RAD_TO_DEG; // TODO risky
+    // angles[2] = -atan2(magdata[1] / magnorm, magdata[0] / magnorm) * RAD_TO_DEG; // TODO magneotmter angle
     angles[2] = 0;
 }
 
